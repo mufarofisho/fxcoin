@@ -31,7 +31,7 @@ class PendingPaymentController extends Controller
      */
     public function index()
     {
-        $pending_payments = PendingPayment::paginate();
+        $pending_payments = PendingPayment::latest()->get();
         return PendingPaymentResource::collection($pending_payments);
     }
 
@@ -207,6 +207,15 @@ class PendingPaymentController extends Controller
         return PendingPaymentResource::collection($offers);
     }
 
+    public function alloffers()
+    {
+        $user = auth('api')->user();
+        $offers = $user->offers()->where('status', '=', '101')->get();
+
+        //Return single pending_payment as a resource
+        return PendingPaymentResource::collection($offers);
+    }
+
     public function make_payment(Request $request)
     {
         $request->validate([
@@ -292,7 +301,7 @@ class PendingPaymentController extends Controller
                 $investment->balance += $balance;
                 $investment->save();
 
-                if ($receiver->referrer->id > 0) {
+                if ($receiver->referrer_id > 0) {
                     //Add bonus
                     $referral_bonus                      = new ReferralBonus;
                     $referral_bonus->user_id             = $receiver->referrer->id;
@@ -338,7 +347,7 @@ class PendingPaymentController extends Controller
                 $investment->balance                 = $balance;
                 $investment->save();
 
-                if ($receiver->referrer->id > 0) {
+                if ($receiver->referrer_id > 0) {
                     //Add bonus
                     $referral_bonus                      = new ReferralBonus;
                     $referral_bonus->user_id             = $receiver->referrer->id;
